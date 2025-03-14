@@ -92,7 +92,7 @@ class Guest(models.Model):
 
 
 class Booking(models.Model):
-    guest = models.ForeignKey(Guest, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
     GENDER_LIST = [
         ('1', 'Мужской'),
         ('2', 'Женский')
