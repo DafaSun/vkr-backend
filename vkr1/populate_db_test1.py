@@ -1,0 +1,434 @@
+import os
+import django
+from django.utils.timezone import now
+import random
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vkr1.settings')
+django.setup()
+
+from core.models import Room, Place, Guest, Booking, RoomPrice
+from core.constants import *
+
+
+def create_test_data():
+    # ----------ROOMS--------------------
+    rooms = []
+    room = Room.objects.create(
+        name="Номер 101",
+        floor="1floor",
+        building="4building",
+        capacity=2,
+        category="1cat",
+        room_type="in_room"
+    )
+    rooms.append(room)
+    room = Room.objects.create(
+        name="Номер 102",
+        floor="1floor",
+        building="4building",
+        capacity=2,
+        category="2cat",
+        room_type="in_block"
+    )
+    rooms.append(room)
+    room = Room.objects.create(
+        name="Номер 103",
+        floor="1floor",
+        building="4building",
+        capacity=2,
+        category="3cat",
+        room_type="in_room"
+    )
+    rooms.append(room)
+    room = Room.objects.create(
+        name="Номер 104",
+        floor="1floor",
+        building="4building",
+        capacity=1,
+        category="4cat",
+        room_type="in_room"
+    )
+    rooms.append(room)
+    room = Room.objects.create(
+        name="Номер 205",
+        floor="2floor",
+        building="4building",
+        capacity=2,
+        category="5cat",
+        room_type="in_block"
+    )
+    rooms.append(room)
+    room = Room.objects.create(
+        name="Номер 106",
+        floor="1floor",
+        building="6building",
+        capacity=2,
+        category="6cat",
+        room_type="in_room"
+    )
+    rooms.append(room)
+    room = Room.objects.create(
+        name="Номер 207",
+        floor="2floor",
+        building="6building",
+        capacity=2,
+        category="7cat",
+        room_type="in_room"
+    )
+    rooms.append(room)
+    print(f"Добавлены {len(rooms)} номеров!")
+
+    # ----------PLACES--------------------
+    places = []
+    place = Place.objects.create(
+        name="Место 101/1",
+        room=rooms[0]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 101/2",
+        room=rooms[0]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 102/1",
+        room=rooms[1]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 102/2",
+        room=rooms[1]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 103/1",
+        room=rooms[2]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 103/2",
+        room=rooms[2]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 104/1",
+        room=rooms[3]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 105/1",
+        room=rooms[4]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 105/2",
+        room=rooms[4]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 106/1",
+        room=rooms[5]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 106/2",
+        room=rooms[5]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 107/1",
+        room=rooms[6]
+    )
+    places.append(place)
+    place = Place.objects.create(
+        name="Место 107/2",
+        room=rooms[6]
+    )
+    places.append(place)
+    print(f"Добавлены {len(places)} мест!")
+
+    # ----------GUESTS--------------------
+    guests = []
+    guest = Guest.objects.create(
+        surname='Иванов',
+        name='Иван',
+        patronymic='Иванович',
+        gender='male',
+        birthday='1978-04-03',
+        tour_type='usual',
+        email=None,
+        phone='89114404789',
+        workplace=None,
+        home_address_country=None,
+        home_address_region=None,
+        home_address_city=None,
+        home_address_street_and_house=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    guests.append(guest)
+    guest = Guest.objects.create(
+        surname='Петров',
+        name='Петр',
+        patronymic='Петрович',
+        gender='male',
+        birthday='1967-09-15',
+        tour_type='usual',
+        email=None,
+        phone='891783423499',
+        workplace=None,
+        home_address_country=None,
+        home_address_region=None,
+        home_address_city=None,
+        home_address_street_and_house=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    guests.append(guest)
+    guest = Guest.objects.create(
+        surname='Сидоров',
+        name='Сергей',
+        patronymic='Алексеевич',
+        gender='male',
+        birthday='1961-06-23',
+        tour_type='social',
+        email=None,
+        phone='891980756979',
+        workplace=None,
+        home_address_country=None,
+        home_address_region=None,
+        home_address_city=None,
+        home_address_street_and_house=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    guests.append(guest)
+    guest = Guest.objects.create(
+        surname='Кротов',
+        name='Анатолий',
+        patronymic='Игоревич',
+        gender='male',
+        birthday='1983-12-08',
+        tour_type='usual',
+        email=None,
+        phone='891882296729',
+        workplace=None,
+        home_address_country=None,
+        home_address_region=None,
+        home_address_city=None,
+        home_address_street_and_house=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    guests.append(guest)
+    guest = Guest.objects.create(
+        surname='Коровьева',
+        name='Елена',
+        patronymic='Витальевна',
+        gender='female',
+        birthday='1992-04-18',
+        tour_type='usual',
+        email=None,
+        phone='823983440789',
+        workplace=None,
+        home_address_country=None,
+        home_address_region=None,
+        home_address_city=None,
+        home_address_street_and_house=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    guests.append(guest)
+    guest = Guest.objects.create(
+        surname='Семенова',
+        name='Анна',
+        patronymic='Сергеевна',
+        gender='female',
+        birthday='1970-11-14',
+        tour_type='usual',
+        email=None,
+        phone='895523446779',
+        workplace=None,
+        home_address_country=None,
+        home_address_region=None,
+        home_address_city=None,
+        home_address_street_and_house=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    guests.append(guest)
+    guest = Guest.objects.create(
+        surname='Старушкова',
+        name='Елена',
+        patronymic='Георгиевна',
+        gender='female',
+        birthday='1981-08-01',
+        tour_type='social',
+        email=None,
+        phone='899876432789',
+        workplace=None,
+        home_address_country=None,
+        home_address_region=None,
+        home_address_city=None,
+        home_address_street_and_house=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    guests.append(guest)
+    print(f"Добавлены {len(guests)} гостей!")
+
+    # ----------PRICES--------------------
+    prices = []
+    price = RoomPrice.objects.create(
+        category="1cat",
+        tour_price=10100,
+        hotel_price=11100,
+        date_begin='2025-01-01',
+        date_end='2025-12-31'
+    )
+    prices.append(price)
+    price = RoomPrice.objects.create(
+        category="2cat",
+        tour_price=10200,
+        hotel_price=11200,
+        date_begin='2025-01-01',
+        date_end='2025-12-31'
+    )
+    prices.append(price)
+    price = RoomPrice.objects.create(
+        category="3cat",
+        tour_price=10300,
+        hotel_price=11300,
+        date_begin='2025-01-01',
+        date_end='2025-12-31'
+    )
+    prices.append(price)
+    price = RoomPrice.objects.create(
+        category="4cat",
+        tour_price=10400,
+        hotel_price=11400,
+        date_begin='2025-01-01',
+        date_end='2025-12-31'
+    )
+    prices.append(price)
+    price = RoomPrice.objects.create(
+        category="5cat",
+        tour_price=10500,
+        hotel_price=11500,
+        date_begin='2025-01-01',
+        date_end='2025-12-31'
+    )
+    prices.append(price)
+    price = RoomPrice.objects.create(
+        category="6cat",
+        tour_price=10600,
+        hotel_price=11600,
+        date_begin='2025-01-01',
+        date_end='2025-12-31'
+    )
+    prices.append(price)
+    price = RoomPrice.objects.create(
+        category="7cat",
+        tour_price=10700,
+        hotel_price=11700,
+        date_begin='2025-01-01',
+        date_end='2025-12-31'
+    )
+    prices.append(price)
+    print(f"Добавлены {len(prices)} цен!")
+
+    # ----------BOOKINGS--------------------
+    booking_matrix=[
+        [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+        [2,2,2,2,2,2,2,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,7,7,7,7,7,7],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,3,3,3,3,3,3,3,3,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,4,4,4,4,4,4,4,4,4,4,4,4,4,0],
+        [0,0,0,0,0,0,5,5,5,5,5,5,0,0,0],
+        [0,6,6,6,6,6,6,6,6,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ]
+
+    bookings = []
+    for i in range(13):
+        for j in range(15):
+            if (booking_matrix[i][j] == 0):
+                booking = Booking.objects.create(
+                    place=places[i],
+                    date=f"2025-05-{j + 1}"
+                )
+            elif (booking_matrix[i][j] == 1):
+                booking = Booking.objects.create(
+                    place=places[i],
+                    date=f"2025-05-{j + 1}",
+                    status="book",
+                    guest=guests[0],
+                    gender='male',
+                )
+            elif (booking_matrix[i][j] == 2):
+                booking = Booking.objects.create(
+                    place=places[i],
+                    date=f"2025-05-{j + 1}",
+                    status="book",
+                    guest=guests[1],
+                    gender='male',
+                )
+            elif (booking_matrix[i][j] == 3):
+                booking = Booking.objects.create(
+                    place=places[i],
+                    date=f"2025-05-{j + 1}",
+                    status="prepay",
+                    guest=guests[2],
+                    gender='male',
+                )
+            elif (booking_matrix[i][j] == 4):
+                booking = Booking.objects.create(
+                    place=places[i],
+                    date=f"2025-05-{j + 1}",
+                    status="fullpay",
+                    guest=guests[3],
+                    gender='male',
+                )
+            elif (booking_matrix[i][j] == 5):
+                booking = Booking.objects.create(
+                    place=places[i],
+                    date=f"2025-05-{j + 1}",
+                    status="prepay",
+                    guest=guests[4],
+                    gender='female',
+                )
+            elif (booking_matrix[i][j] == 6):
+                booking = Booking.objects.create(
+                    place=places[i],
+                    date=f"2025-05-{j + 1}",
+                    status="fullpay",
+                    guest=guests[5],
+                    gender='female',
+                )
+            elif (booking_matrix[i][j] == 7):
+                booking = Booking.objects.create(
+                    place=places[i],
+                    date=f"2025-05-{j + 1}",
+                    status="book",
+                    guest=guests[6],
+                    gender='female',
+                )
+            else:
+                booking = Booking.objects.create(
+                    place=places[i],
+                    date=f"2025-05-{j + 1}"
+                )
+
+            bookings.append(booking)
+    print(f"Добавлены {len(bookings)} дней брони!")
+
+
+if __name__ == '__main__':
+    create_test_data()
+    print()
+    print("Данные успешно добавлены!")
