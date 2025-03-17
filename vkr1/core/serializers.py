@@ -32,3 +32,15 @@ class BookingSerializer(serializers.ModelSerializer):
         if value > max_date:
             raise serializers.ValidationError(f"Дата не может быть позднее {max_date.strftime('%d.%m.%Y')}")
         return value
+
+class BookingNewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ["surname", "name", "patronymic", "birthday",
+                  "phone", "checkin", "checkout", "place_id", "gender"]
+
+    def validate_date(self, value):
+        max_date = date.today() + timedelta(days=365 * 1.5)
+        if value > max_date:
+            raise serializers.ValidationError(f"Дата не может быть позднее {max_date.strftime('%d.%m.%Y')}")
+        return value
