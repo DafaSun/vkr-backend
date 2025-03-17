@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Booking, Place, Room, RoomPrice, Guest
-from .serializers import BookingNewSerializer
 
 class ManagerAvailableCategoriesAPIView(APIView):
     def get(self, request):

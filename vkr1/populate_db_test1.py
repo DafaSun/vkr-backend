@@ -1,13 +1,10 @@
 import os
 import django
-from django.utils.timezone import now
-import random
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vkr1.settings')
 django.setup()
 
-from core.models import Room, Place, Guest, Booking, RoomPrice
-from core.constants import *
+from core.models import Room, Place, Guest, Booking, RoomPrice, BookingRecords
 
 
 def create_test_data():
@@ -162,9 +159,7 @@ def create_test_data():
         home_address_country=None,
         home_address_region=None,
         home_address_city=None,
-        home_address_street_and_house=None,
-        prepayment_percent=None,
-        prepayment_money=None,
+        home_address_street_and_house=None
     )
     guests.append(guest)
     guest = Guest.objects.create(
@@ -180,9 +175,7 @@ def create_test_data():
         home_address_country=None,
         home_address_region=None,
         home_address_city=None,
-        home_address_street_and_house=None,
-        prepayment_percent=None,
-        prepayment_money=None,
+        home_address_street_and_house=None
     )
     guests.append(guest)
     guest = Guest.objects.create(
@@ -198,9 +191,7 @@ def create_test_data():
         home_address_country=None,
         home_address_region=None,
         home_address_city=None,
-        home_address_street_and_house=None,
-        prepayment_percent=None,
-        prepayment_money=None,
+        home_address_street_and_house=None
     )
     guests.append(guest)
     guest = Guest.objects.create(
@@ -216,9 +207,7 @@ def create_test_data():
         home_address_country=None,
         home_address_region=None,
         home_address_city=None,
-        home_address_street_and_house=None,
-        prepayment_percent=None,
-        prepayment_money=None,
+        home_address_street_and_house=None
     )
     guests.append(guest)
     guest = Guest.objects.create(
@@ -234,9 +223,7 @@ def create_test_data():
         home_address_country=None,
         home_address_region=None,
         home_address_city=None,
-        home_address_street_and_house=None,
-        prepayment_percent=None,
-        prepayment_money=None,
+        home_address_street_and_house=None
     )
     guests.append(guest)
     guest = Guest.objects.create(
@@ -252,9 +239,7 @@ def create_test_data():
         home_address_country=None,
         home_address_region=None,
         home_address_city=None,
-        home_address_street_and_house=None,
-        prepayment_percent=None,
-        prepayment_money=None,
+        home_address_street_and_house=None
     )
     guests.append(guest)
     guest = Guest.objects.create(
@@ -270,9 +255,7 @@ def create_test_data():
         home_address_country=None,
         home_address_region=None,
         home_address_city=None,
-        home_address_street_and_house=None,
-        prepayment_percent=None,
-        prepayment_money=None,
+        home_address_street_and_house=None
     )
     guests.append(guest)
     print(f"Добавлены {len(guests)} гостей!")
@@ -337,21 +320,102 @@ def create_test_data():
     prices.append(price)
     print(f"Добавлены {len(prices)} цен!")
 
+    # ----------RECORDS--------------------
+    records = []
+    record = BookingRecords.objects.create(
+        guest=guests[0],
+        checkin='2025-05-01',
+        checkout='2025-05-09',
+        place=places[0],
+        status="book",
+        total_price=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    records.append(record)
+    record = BookingRecords.objects.create(
+        guest=guests[1],
+        checkin='2025-05-01',
+        checkout='2025-05-07',
+        place=places[1],
+        status="prepay",
+        total_price=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    records.append(record)
+    record = BookingRecords.objects.create(
+        guest=guests[2],
+        checkin='2025-05-04',
+        checkout='2025-05-11',
+        place=places[4],
+        status="fullpay",
+        total_price=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    records.append(record)
+    record = BookingRecords.objects.create(
+        guest=guests[3],
+        checkin='2025-05-02',
+        checkout='2025-05-14',
+        place=places[6],
+        status="book",
+        total_price=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    records.append(record)
+    record = BookingRecords.objects.create(
+        guest=guests[4],
+        checkin='2025-05-07',
+        checkout='2025-05-12',
+        place=places[7],
+        status="prepay",
+        total_price=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    records.append(record)
+    record = BookingRecords.objects.create(
+        guest=guests[5],
+        checkin='2025-05-02',
+        checkout='2025-05-09',
+        place=places[8],
+        status="book",
+        total_price=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    records.append(record)
+    record = BookingRecords.objects.create(
+        guest=guests[6],
+        checkin='2025-05-10',
+        checkout='2025-05-15',
+        place=places[2],
+        status="book",
+        total_price=None,
+        prepayment_percent=None,
+        prepayment_money=None,
+    )
+    records.append(record)
+    print(f"Добавлены {len(records)} записей!")
+
     # ----------BOOKINGS--------------------
-    booking_matrix=[
-        [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
-        [2,2,2,2,2,2,2,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,7,7,7,7,7,7],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,3,3,3,3,3,3,3,3,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,4,4,4,4,4,4,4,4,4,4,4,4,4,0],
-        [0,0,0,0,0,0,5,5,5,5,5,5,0,0,0],
-        [0,6,6,6,6,6,6,6,6,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    booking_matrix = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+        [2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0],
+        [0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 0, 0],
+        [0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     ]
 
     bookings = []
@@ -366,57 +430,57 @@ def create_test_data():
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
-                    status="book",
                     guest=guests[0],
                     gender='male',
+                    record=records[0]
                 )
             elif (booking_matrix[i][j] == 2):
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
-                    status="book",
                     guest=guests[1],
                     gender='male',
+                    record=records[1]
                 )
             elif (booking_matrix[i][j] == 3):
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
-                    status="prepay",
                     guest=guests[2],
                     gender='male',
+                    record=records[2]
                 )
             elif (booking_matrix[i][j] == 4):
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
-                    status="fullpay",
                     guest=guests[3],
                     gender='male',
+                    record=records[3]
                 )
             elif (booking_matrix[i][j] == 5):
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
-                    status="prepay",
                     guest=guests[4],
                     gender='female',
+                    record=records[4]
                 )
             elif (booking_matrix[i][j] == 6):
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
-                    status="fullpay",
                     guest=guests[5],
                     gender='female',
+                    record=records[5]
                 )
             elif (booking_matrix[i][j] == 7):
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
-                    status="book",
                     guest=guests[6],
                     gender='female',
+                    record=records[6]
                 )
             else:
                 booking = Booking.objects.create(

@@ -33,23 +33,6 @@ class Guest(models.Model):
     home_address_city = models.CharField(null=True, blank=True, max_length=30)
     home_address_street_and_house = models.CharField(null=True, blank=True, max_length=70)
     workplace = models.CharField(null=True, blank=True, max_length=100)
-    prepayment_percent = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], null=True, blank=True)
-    prepayment_money = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
-
-
-class Booking(models.Model):
-    place = models.ForeignKey(Place, on_delete=models.PROTECT)
-    date = models.DateField(validators=[MinValueValidator(date.today())])
-    status = models.CharField(choices=BOOKING_STATUSES_LIST, default="free")
-    guest = models.ForeignKey(Guest, on_delete=models.CASCADE, null=True)
-    gender = models.CharField(choices=GENDER_ROOM_LIST, default="undefined")
-    price = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
-
-    def clean(self):
-        super().clean()
-        max_date = date.today() + timedelta(days=365 * 1.5)
-        if self.date > max_date:
-            raise ValidationError(f"Дата не может быть позднее {max_date.strftime('%d.%m.%Y')}")
 
 
 class RoomPrice(models.Model):
@@ -58,3 +41,37 @@ class RoomPrice(models.Model):
     hotel_price = models.DecimalField(decimal_places=2, max_digits=10)
     date_begin = models.DateField(validators=[MinValueValidator(date.today())])
     date_end = models.DateField(null=True, blank=True)
+
+
+class BookingRecords(models.Model):
+    guest = models.ForeignKey(Guest, on_delete=models.CASCADE)
+    checkin = models.DateField(validators=[MinValueValidator(date.today())])
+    checkout = models.DateField(validators=[MinValueValidator(date.today())])
+    place = models.ForeignKey(Place, on_delete=models.PROTECT)
+    status = models.CharField(choices=BOOKING_STATUSES_LIST, default="free")
+    total_price = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
+    prepayment_percent = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], null=True,
+                                             blank=True)
+    prepayment_money = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
+
+    def clean(self):
+        super().clean()
+        max_date = date.today() + timedelta(days=365 * 1.5)
+        if self.checkin > max_date:
+            raise ValidationError(f"Дата заезда не может быть позднее {max_date.strftime('%d.%m.%Y')}")
+        if self.checkout > max_date:
+            raise ValidationError(f"Дата отъезда не может быть позднее {max_date.strftime('%d.%m.%Y')}")
+
+
+class Booking(models.Model):
+    place = models.ForeignKey(Place, on_delete=models.PROTECT)
+    date = models.DateField(validators=[MinValueValidator(date.today())])
+    guest = models.ForeignKey(Guest, on_delete=models.CASCADE, null=True)
+    gender = models.CharField(choices=GENDER_ROOM_LIST, default="undefined")
+    record = models.ForeignKey(BookingRecords, on_delete=models.PROTECT, null=True, blank=True)
+
+    def clean(self):
+        super().clean()
+        max_date = date.today() + timedelta(days=365 * 1.5)
+        if self.date > max_date:
+            raise ValidationError(f"Дата не может быть позднее {max_date.strftime('%d.%m.%Y')}")

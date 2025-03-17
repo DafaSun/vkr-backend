@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from datetime import date, timedelta
-from .models import Room, Place, Guest, Booking, RoomPrice
+from .models import Room, Place, Guest, Booking, RoomPrice, BookingRecords
 
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,11 +33,10 @@ class BookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Дата не может быть позднее {max_date.strftime('%d.%m.%Y')}")
         return value
 
-class BookingNewSerializer(serializers.ModelSerializer):
+class BookingRecordsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Booking
-        fields = ["surname", "name", "patronymic", "birthday",
-                  "phone", "checkin", "checkout", "place_id", "gender"]
+        model = BookingRecords
+        fields = "__all__"
 
     def validate_date(self, value):
         max_date = date.today() + timedelta(days=365 * 1.5)
