@@ -66,9 +66,10 @@ class BookingRecords(models.Model):
 class Booking(models.Model):
     place = models.ForeignKey(Place, on_delete=models.PROTECT)
     date = models.DateField(validators=[MinValueValidator(date.today())])
+    status = models.CharField(choices=BOOKING_STATUSES_LIST, default="free")
     guest = models.ForeignKey(Guest, on_delete=models.CASCADE, null=True)
     gender = models.CharField(choices=GENDER_ROOM_LIST, default="undefined")
-    record = models.ForeignKey(BookingRecords, on_delete=models.PROTECT, null=True, blank=True)
+    record = models.ForeignKey(BookingRecords, on_delete=models.SET_NULL, null=True, blank=True)
 
     def clean(self):
         super().clean()

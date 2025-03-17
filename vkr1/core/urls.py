@@ -15,5 +15,9 @@ urlpatterns = [
     path("manager/categories/", ManagerAvailableCategoriesAPIView.as_view(), name="categories"),
     path("manager/categories/places/", ManagerAvailablePlacesAPIView.as_view(), name="categories_places"),
     path("manager/booking/new/", ManagerBookingNewAPIView.as_view(), name="booking_new"),
-    path("manager/bookings", ManagerBookingsAPIView.as_view(), name="bookings"),
+    path("manager/bookings/", ManagerBookingsAPIView.as_view(), name="bookings"),
+    path("manager/bookings/record/", ManagerBookingsRecordGetAPIView.as_view(), name="bookings_record"),
+    path("manager/bookings/record/delete/", ManagerBookingsRecordDeleteAPIView.as_view(), name="bookings_record_delete"),
+    path("manager/bookings/record/update/", ManagerBookingsRecordUpdateAPIView.as_view(), name="bookings_record_update"),
+    path("manager/rooms/", ManagerRoomsTableAPIView.as_view(), name="rooms"),
 ]

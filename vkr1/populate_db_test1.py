@@ -431,6 +431,7 @@ def create_test_data():
                     place=places[i],
                     date=f"2025-05-{j + 1}",
                     guest=guests[0],
+                    status="book",
                     gender='male',
                     record=records[0]
                 )
@@ -439,6 +440,7 @@ def create_test_data():
                     place=places[i],
                     date=f"2025-05-{j + 1}",
                     guest=guests[1],
+                    status="prepay",
                     gender='male',
                     record=records[1]
                 )
@@ -447,6 +449,7 @@ def create_test_data():
                     place=places[i],
                     date=f"2025-05-{j + 1}",
                     guest=guests[2],
+                    status="book",
                     gender='male',
                     record=records[2]
                 )
@@ -454,6 +457,7 @@ def create_test_data():
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
+                    status="fullpay",
                     guest=guests[3],
                     gender='male',
                     record=records[3]
@@ -462,6 +466,7 @@ def create_test_data():
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
+                    status="prepay",
                     guest=guests[4],
                     gender='female',
                     record=records[4]
@@ -470,6 +475,7 @@ def create_test_data():
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
+                    status="book",
                     guest=guests[5],
                     gender='female',
                     record=records[5]
@@ -478,6 +484,7 @@ def create_test_data():
                 booking = Booking.objects.create(
                     place=places[i],
                     date=f"2025-05-{j + 1}",
+                    status="book",
                     guest=guests[6],
                     gender='female',
                     record=records[6]
