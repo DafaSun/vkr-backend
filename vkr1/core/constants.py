@@ -49,3 +49,9 @@ GENDER_ROOM_LIST = [
     ("female", "Женский"),
     ("undefined", "Не указан"),
 ]
+
+NUTRITION_LIST = [
+    ("", "Мужской"),
+    ("female", "Женский"),
+    ("undefined", "Не указан"),
+]

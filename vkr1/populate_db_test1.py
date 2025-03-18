@@ -324,6 +324,7 @@ def create_test_data():
     records = []
     record = BookingRecords.objects.create(
         guest=guests[0],
+        tour_type='usual',
         checkin='2025-05-01',
         checkout='2025-05-09',
         place=places[0],
@@ -335,6 +336,7 @@ def create_test_data():
     records.append(record)
     record = BookingRecords.objects.create(
         guest=guests[1],
+        tour_type='usual',
         checkin='2025-05-01',
         checkout='2025-05-07',
         place=places[1],
@@ -346,6 +348,7 @@ def create_test_data():
     records.append(record)
     record = BookingRecords.objects.create(
         guest=guests[2],
+        tour_type='social',
         checkin='2025-05-04',
         checkout='2025-05-11',
         place=places[4],
@@ -357,6 +360,7 @@ def create_test_data():
     records.append(record)
     record = BookingRecords.objects.create(
         guest=guests[3],
+        tour_type='usual',
         checkin='2025-05-02',
         checkout='2025-05-14',
         place=places[6],
@@ -368,6 +372,7 @@ def create_test_data():
     records.append(record)
     record = BookingRecords.objects.create(
         guest=guests[4],
+        tour_type='usual',
         checkin='2025-05-07',
         checkout='2025-05-12',
         place=places[7],
@@ -379,6 +384,7 @@ def create_test_data():
     records.append(record)
     record = BookingRecords.objects.create(
         guest=guests[5],
+        tour_type='usual',
         checkin='2025-05-02',
         checkout='2025-05-09',
         place=places[8],
@@ -390,6 +396,7 @@ def create_test_data():
     records.append(record)
     record = BookingRecords.objects.create(
         guest=guests[6],
+        tour_type='social',
         checkin='2025-05-10',
         checkout='2025-05-15',
         place=places[2],

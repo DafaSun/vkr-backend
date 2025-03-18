@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Booking, Place, Room, RoomPrice, Guest, BookingRecords
+from .models import Booking, Place, Room, RoomPrice, Guest, BookingRecords, NutritionPrice
 
 
 class ManagerAvailableCategoriesAPIView(APIView):
@@ -16,7 +16,6 @@ class ManagerAvailableCategoriesAPIView(APIView):
         guests = int(request.GET.get("guests", 1))
         room_type = request.GET.get("room_type")
 
-        # Проверка наличия обязательных параметров
         if not checkin or not checkout:
             return Response({"error": "Укажите checkin и checkout"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -24,22 +23,20 @@ class ManagerAvailableCategoriesAPIView(APIView):
         checkout_date = datetime.strptime(checkout, "%Y-%m-%d").date()
         days = (checkout_date - checkin_date).days
 
-        # 1. Получаем занятые места за указанный период
         booked_places = Booking.objects.filter(
             date__range=[checkin_date, checkout_date],
             status__in=["book", "prepay", "fullpay", "occupied"]
         ).values_list("place_id", flat=True).distinct()
 
-        # 2. Получаем список подходящих номеров (исключая занятые)
         available_places = Place.objects.exclude(id__in=booked_places).filter(
-            room__capacity__gte=guests,  # Проверяем вместимость
-            room__room_type=room_type,  # Проверяем тип удобств
+            room__capacity__gte=guests,
+            room__room_type=room_type,
         ).filter(
-            Q(booking__gender=gender) | Q(booking__gender="undefined")  # Учитываем пол
+            Q(booking__gender=gender) | Q(booking__gender="undefined")
         ).annotate(
             occupied_count=Count("booking",
                                  filter=Q(booking__status="free")
-                                 )  # Подсчёт свободных мест
+                                 )
             # ).filter(
             #     occupied_count=0  # Только те, где нет занятых мест
         )
@@ -49,7 +46,6 @@ class ManagerAvailableCategoriesAPIView(APIView):
         elif gender == "male":
             available_places = available_places.exclude(booking__gender="female")
 
-        # 3. Группируем по категориям и считаем стоимость
         category_data = {}
         for place in available_places:
             category = place.room.category
@@ -60,7 +56,7 @@ class ManagerAvailableCategoriesAPIView(APIView):
             ).first()
 
             if price_entry:
-                price = price_entry.tour_price * days  # Умножаем на количество дней
+                price = price_entry.tour_price * days
 
                 if category not in category_data:
                     category_data[category] = {
@@ -71,7 +67,6 @@ class ManagerAvailableCategoriesAPIView(APIView):
 
                 category_data[category]["available_places"] += 1
 
-        # Преобразуем данные в список, который будет возвращён в ответе
         response_data = [
             {
                 "category": category,
@@ -92,7 +87,6 @@ class ManagerAvailablePlacesAPIView(APIView):
         guests = int(request.GET.get("guests", 1))
         category = request.GET.get("category")
 
-        # Проверка наличия обязательных параметров
         if not checkin or not checkout:
             return Response({"error": "Укажите checkin и checkout"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -100,13 +94,11 @@ class ManagerAvailablePlacesAPIView(APIView):
         checkout_date = datetime.strptime(checkout, "%Y-%m-%d").date()
         days = (checkout_date - checkin_date).days
 
-        # 1. Получаем занятые места за указанный период
         booked_places = Booking.objects.filter(
             date__range=[checkin_date, checkout_date],
             status__in=["book", "prepay", "fullpay", "occupied"]
         ).values_list("place_id", flat=True).distinct()
 
-        # 2. Получаем список подходящих номеров (исключая занятые)
         available_places = Place.objects.exclude(id__in=booked_places).filter(
             room__category=category,  # Проверяем category
         ).filter(
@@ -114,9 +106,9 @@ class ManagerAvailablePlacesAPIView(APIView):
             # ).annotate(
             #     occupied_count=Count("booking",
             #                          filter=Q(booking__status="free")
-            #                          )  # Подсчёт свободных мест
+            #                          )
             # ).filter(
-            #     occupied_count=0  # Только те, где нет занятых мест
+            #     occupied_count=0
         )
 
         if gender == "female":
@@ -135,7 +127,7 @@ class ManagerAvailablePlacesAPIView(APIView):
             ).first()
 
             if price_entry:
-                price = price_entry.tour_price * days  # Умножаем на количество дней
+                price = price_entry.tour_price * days
 
                 if place.id not in places_data:
                     places_data[place.id] = {
@@ -145,7 +137,6 @@ class ManagerAvailablePlacesAPIView(APIView):
                     }
                     i += 1
 
-        # Преобразуем данные в список, который будет возвращён в ответе
         response_data = [
             {
                 "place_id": place_id,
@@ -175,9 +166,11 @@ class ManagerBookingNewAPIView(APIView):
         phone = data["phone"]
         email = data.get("email", None)
         gender = data["gender"]
+        tour_type = data["tour_type"]
+        breakfast = data.get("breakfast", False)
+        lunch = data.get("lunch", False)
+        dinner = data.get("dinner", False)
 
-        # Проверяем, свободно ли место
-        # Получаем все бронирования для данного места с нужными статусами
         bookings = Booking.objects.filter(
             place_id=place_id,
             status__in=["book", "prepay", "fullpay", "occupied"],
@@ -185,7 +178,6 @@ class ManagerBookingNewAPIView(APIView):
             date__lt=checkout
         )
 
-        # Проверяем, есть ли такие записи
         is_booked = bookings.exists()
 
         if is_booked:
@@ -198,34 +190,59 @@ class ManagerBookingNewAPIView(APIView):
             gender=gender,
             birthday=birthday,
             phone=phone,
-            email=email
+            email=email,
+            tour_type=tour_type,
         )
 
-        current_date = checkin
-        booking_ids = []
-        while current_date < checkout:
-            # Создание записи бронирования для каждой даты
-            booking = Booking.objects.create(
-                place=place,
-                date=current_date,
-                gender=gender,
-                guest=guest
-            )
-            booking_ids.append(booking.id)
-            current_date += timedelta(days=1)
+        days = (checkout - checkin).days
+        price = RoomPrice.objects.get(category=place.room.category)
+        total_price = 0
+        if tour_type=="usual":
+            total_price=days*price.tour_price
+        elif tour_type=="hotel":
+            total_price=days*price.hotel_price
+
+            breakfast_price = NutritionPrice.objects.get(nutrition='breakfast').price
+            lunch_price = NutritionPrice.objects.get(nutrition='breakfast').price
+            dinner_price = NutritionPrice.objects.get(nutrition='dinner').price
+
+            if breakfast:
+                total_price+=days*breakfast_price
+            if lunch:
+                total_price+=days*lunch_price
+            if dinner:
+                total_price+=days*dinner_price
+
         record = BookingRecords.objects.create(
             guest=guest,
             checkin=checkin,
             checkout=checkout,
             place=place,
             status="book",
-            total_price=None,
+            total_price=total_price,
             prepayment_percent=None,
-            prepayment_money=None
+            prepayment_money=None,
+            hasBreakfast=breakfast,
+            hasLunch=lunch,
+            hasDinner=dinner,
+            tour_type=tour_type,
         )
 
+        current_date = checkin
+        booking_ids = []
+        while current_date < checkout:
+            booking = Booking.objects.create(
+                place=place,
+                date=current_date,
+                gender=gender,
+                guest=guest,
+                record=record
+            )
+            booking_ids.append(booking.id)
+            current_date += timedelta(days=1)
+
         return Response(
-            {"message": "Бронирование успешно создано", "booking_ids": booking_ids},
+            {"message": "Бронирование успешно создано", "record_id": record.id},
             status=status.HTTP_201_CREATED
         )
 
@@ -271,28 +288,25 @@ class ManagerBookingsRecordGetAPIView(APIView):
     def get(self, request):
         record_id = request.GET.get("id")
 
-        # Проверка наличия обязательных параметров
         if not id:
             return Response({"error": "Укажите id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 1. Получаем занятые места за указанный период
         record = BookingRecords.objects.filter(
             id=record_id
         ).first()
 
-        # Преобразуем данные в список, который будет возвращён в ответе
         response_data = {
             "guest_surname": record.guest.surname if record.guest else None,
             "guest_name": record.guest.name if record.guest else None,
             "guest_patronymic": record.guest.patronymic if record.guest else None,
             "checkin": record.checkin.strftime("%Y-%m-%d"),
-            "checkout" : record.checkout.strftime("%Y-%m-%d"),
+            "checkout": record.checkout.strftime("%Y-%m-%d"),
             "room_name": record.place.room.name if record.place else None,
             "category": record.place.room.category,
-            "place_name" : record.place.name if record.place else None,
-            "status" : record.status,
-            "total_price" : record.total_price,
-            "prepayment_percent" : record.prepayment_percent,
+            "place_name": record.place.name if record.place else None,
+            "status": record.status,
+            "total_price": record.total_price,
+            "prepayment_percent": record.prepayment_percent,
             "prepayment_money": record.prepayment_money,
         }
 
@@ -303,7 +317,6 @@ class ManagerBookingsRecordDeleteAPIView(APIView):
     def delete(self, request):
         record_id = request.GET.get("id")
 
-        # Проверка наличия обязательных параметров
         if not id:
             return Response({"error": "Укажите id"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -320,9 +333,9 @@ class ManagerBookingsRecordDeleteAPIView(APIView):
 
             record_to_delete.delete()
 
-            # Возвращаем успешный ответ
             return Response({"message": "Booking record deleted and bookings updated successfully"},
                             status=status.HTTP_204_NO_CONTENT)
+
 
 class ManagerBookingsRecordUpdateAPIView(APIView):
     def patch(self, request):
@@ -349,6 +362,7 @@ class ManagerBookingsRecordUpdateAPIView(APIView):
             "prepayment_percent": record.prepayment_percent,
             "prepayment_money": record.prepayment_money
         }, status=status.HTTP_200_OK)
+
 
 class ManagerRoomsTableAPIView(APIView):
     def get(self, request):
@@ -388,3 +402,140 @@ class ManagerRoomsTableAPIView(APIView):
                 data["bookings"][place].setdefault(d, "free")
 
         return Response(data)
+
+
+class ManagerGuestsAPIView(APIView):
+    def get(self, request):
+        surname = request.query_params.get('surname', None)
+
+        guests = Guest.objects.all()
+
+        if surname:
+            guests = guests.filter(guest__surname__icontains=surname)
+
+        response_data = [
+            {
+                "guest_id": guest.id,
+                "surname": guest.surname,
+                "name": guest.name,
+                "patronymic": guest.patronymic,
+                "birthday": guest.birthday,
+                "tour_type": guest.tour_type
+            }
+            for guest in guests
+        ]
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class ManagerGuestsGetPersonAPIView(APIView):
+    def get(self, request):
+        guest_id = request.GET.get("id")
+
+        if not guest_id:
+            return Response({"error": "Укажите id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        guest = Guest.objects.get(id=guest_id)
+        record = BookingRecords.objects.filter(guest=guest).first()
+
+        response_data = {
+            "guest_id": guest.id,
+            "surname": guest.surname,
+            "name": guest.name,
+            "patronymic": guest.patronymic,
+            "birthday": guest.birthday,
+            "gender": guest.gender,
+            "tour_type": guest.tour_type,
+            "email": guest.email,
+            "phone": guest.phone,
+            "home_address_country": guest.home_address_country,
+            "home_address_region": guest.home_address_region,
+            "home_address_city": guest.home_address_city,
+            "home_address_street_and_house": guest.home_address_street_and_house,
+            "workplace": guest.workplace,
+            "place_name": record.place.name,
+            "room_name": record.place.room.name,
+            "checkin": record.checkin,
+            "checkout": record.checkout,
+            "category": record.place.room.category,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class ManagerGuestsNewPersonAPIView(APIView):
+    def post(self, request):
+        data = request.data
+        surname = data["surname"]
+        name = data["name"]
+        patronymic = data.get("patronymic", None)
+        gender = data.get("gender")
+        birthday = data["birthday"]
+        phone = data["phone"]
+        email = data.get("email", None)
+        home_address_country = data.get("home_address_country", None)
+        home_address_region = data.get("home_address_region", None)
+        home_address_city = data.get("home_address_city", None)
+        home_address_street_and_house = data.get("home_address_street_and_house", None)
+        workplace = data.get("workplace", None)
+
+        guest, created = Guest.objects.get_or_create(
+            surname=surname,
+            name=name,
+            patronymic=patronymic,
+            gender=gender,
+            birthday=birthday,
+            phone=phone,
+            email=email,
+            home_address_country=home_address_country,
+            home_address_region=home_address_region,
+            home_address_city=home_address_city,
+            home_address_street_and_house=home_address_street_and_house,
+            workplace=workplace
+        )
+
+        return Response(
+            {"message": "Гость успешно создан", "guest_id": guest.id},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class ManagerGuestsEditPersonAPIView(APIView):
+    def patch(self, request):
+        guest_id = request.data.get("guest_id")
+        guest = Guest.objects.get(id=guest_id)
+
+        surname = request.data.get("surname", guest.surname)
+        name = request.data.get("name", guest.name)
+        patronymic = request.data.get("patronymic", guest.patronymic)
+        gender = request.data.get("gender", guest.gender)
+        birthday = request.data.get("birthday", guest.birthday)
+        phone = request.data.get("phone", guest.phone)
+        email = request.data.get("email", guest.email)
+        home_address_country = request.data.get("home_address_country", guest.home_address_country)
+        home_address_region = request.data.get("home_address_region", guest.home_address_region)
+        home_address_city = request.data.get("home_address_city", guest.home_address_city)
+        home_address_street_and_house = request.data.get("home_address_street_and_house", guest.home_address_street_and_house)
+        workplace = request.data.get("workplace", guest.workplace)
+
+        guest.surname = surname
+        guest.name = name
+        guest.patronymic = patronymic
+        guest.gender = gender
+        guest.birthday = birthday
+        guest.phone = phone
+        guest.email = email
+        guest.home_address_country = home_address_country
+        guest.home_address_region = home_address_region
+        guest.home_address_city = home_address_city
+        guest.home_address_street_and_house = home_address_street_and_house
+        guest.workplace = workplace
+
+        guest.save()
+
+        return Response({
+            "id": guest.id,
+            "name": guest.name,
+            "surname": guest.surname,
+            "patronymic": guest.patronymic,
+        }, status=status.HTTP_200_OK)

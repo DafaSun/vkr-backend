@@ -20,4 +20,8 @@ urlpatterns = [
     path("manager/bookings/record/delete/", ManagerBookingsRecordDeleteAPIView.as_view(), name="bookings_record_delete"),
     path("manager/bookings/record/update/", ManagerBookingsRecordUpdateAPIView.as_view(), name="bookings_record_update"),
     path("manager/rooms/", ManagerRoomsTableAPIView.as_view(), name="rooms"),
+    path("manager/guests/", ManagerGuestsAPIView.as_view(), name="guests"),
+    path("manager/guests/person/", ManagerGuestsGetPersonAPIView.as_view(), name="guests_person"),
+    path("manager/guests/new/", ManagerGuestsNewPersonAPIView.as_view(), name="guests_person"),
+    path("manager/guests/edit/", ManagerGuestsEditPersonAPIView.as_view(), name="guests_person"),
 ]

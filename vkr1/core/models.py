@@ -42,6 +42,12 @@ class RoomPrice(models.Model):
     date_begin = models.DateField(validators=[MinValueValidator(date.today())])
     date_end = models.DateField(null=True, blank=True)
 
+class NutritionPrice(models.Model):
+    nutrition = models.CharField(choices=NUTRITION_LIST)
+    price = models.DecimalField(decimal_places=2, max_digits=10)
+    date_begin = models.DateField(validators=[MinValueValidator(date.today())])
+    date_end = models.DateField(null=True, blank=True)
+
 
 class BookingRecords(models.Model):
     guest = models.ForeignKey(Guest, on_delete=models.CASCADE)
@@ -53,6 +59,10 @@ class BookingRecords(models.Model):
     prepayment_percent = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], null=True,
                                              blank=True)
     prepayment_money = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
+    tour_type = models.CharField(choices=TOUR_TYPES_LIST)
+    hasBreakfast=models.BooleanField(default=False)
+    hasLunch=models.BooleanField(default=False)
+    hasDinner=models.BooleanField(default=False)
 
     def clean(self):
         super().clean()
