@@ -5,12 +5,17 @@ from django.core.exceptions import ValidationError
 from .constants import *
 
 
+class Categories(models.Model):
+    label = models.CharField(max_length=5, unique=True)
+    name = models.CharField(max_length=100)
+
+
 class Room(models.Model):
     name = models.CharField(max_length=100, unique=True)
     floor = models.CharField(choices=FLOORS_LIST)
     building = models.CharField(choices=BUILDINGS_LIST)
     capacity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(3)])
-    category = models.CharField(choices=CATEGORIES_LIST)
+    category = models.ForeignKey(Categories, on_delete=models.PROTECT)
     room_type = models.CharField(choices=ROOM_TYPES_LIST)
 
 
@@ -36,11 +41,12 @@ class Guest(models.Model):
 
 
 class RoomPrice(models.Model):
-    category = models.CharField(choices=CATEGORIES_LIST)
+    category = models.ForeignKey(Categories, on_delete=models.PROTECT)
     tour_price = models.DecimalField(decimal_places=2, max_digits=10)
     hotel_price = models.DecimalField(decimal_places=2, max_digits=10)
     date_begin = models.DateField(validators=[MinValueValidator(date.today())])
     date_end = models.DateField(null=True, blank=True)
+
 
 class NutritionPrice(models.Model):
     nutrition = models.CharField(choices=NUTRITION_LIST)
@@ -60,9 +66,9 @@ class BookingRecords(models.Model):
                                              blank=True)
     prepayment_money = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
     tour_type = models.CharField(choices=TOUR_TYPES_LIST)
-    hasBreakfast=models.BooleanField(default=False)
-    hasLunch=models.BooleanField(default=False)
-    hasDinner=models.BooleanField(default=False)
+    hasBreakfast = models.BooleanField(default=False)
+    hasLunch = models.BooleanField(default=False)
+    hasDinner = models.BooleanField(default=False)
 
     def clean(self):
         super().clean()
@@ -86,3 +92,4 @@ class Booking(models.Model):
         max_date = date.today() + timedelta(days=365 * 1.5)
         if self.date > max_date:
             raise ValidationError(f"Дата не может быть позднее {max_date.strftime('%d.%m.%Y')}")
+

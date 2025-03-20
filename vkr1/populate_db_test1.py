@@ -4,10 +4,49 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vkr1.settings')
 django.setup()
 
-from core.models import Room, Place, Guest, Booking, RoomPrice, BookingRecords
+from core.models import Room, Place, Guest, Booking, RoomPrice, BookingRecords, Categories
 
 
 def create_test_data():
+    # ----------CATEGORIES--------------------
+    categories = []
+    category = Categories.objects.create(
+        name="1 - Двухкомнатный номер на 1 этаже в 4 корпусе с удобствами в номере",
+        label="1cat",
+    )
+    categories.append(category)
+    category = Categories.objects.create(
+        name="2 - Двухместный номер на 1 этаже в 4 корпусе с удобствами в блоке",
+        label="2cat",
+    )
+    categories.append(category)
+    category = Categories.objects.create(
+        name="3 - Двухместный номер на 1 этаже в 4 корпусе с удобствами в номере",
+        label="3cat",
+    )
+    categories.append(category)
+    category = Categories.objects.create(
+        name="4 - Одноместный номер на 1 этаже в 4 корпусе с удобствами в номере",
+        label="4cat",
+    )
+    categories.append(category)
+    category = Categories.objects.create(
+        name="5 - Двухместный номер на 2 этаже в 4 корпусе с удобствами в блоке",
+        label="5cat",
+    )
+    categories.append(category)
+    category = Categories.objects.create(
+        name="6 - Двухместный номер на 1 этаже в 6 корпусе с удобствами в номере",
+        label="6cat",
+    )
+    categories.append(category)
+    category = Categories.objects.create(
+        name="7 - Двухместный номер на 2 этаже в 6 корпусе с удобствами в номере",
+        label="7cat",
+    )
+    categories.append(category)
+    print(f"Добавлено {len(categories)} категорий!")
+
     # ----------ROOMS--------------------
     rooms = []
     room = Room.objects.create(
@@ -15,7 +54,7 @@ def create_test_data():
         floor="1floor",
         building="4building",
         capacity=2,
-        category="1cat",
+        category=categories[0],
         room_type="in_room"
     )
     rooms.append(room)
@@ -24,7 +63,7 @@ def create_test_data():
         floor="1floor",
         building="4building",
         capacity=2,
-        category="2cat",
+        category=categories[1],
         room_type="in_block"
     )
     rooms.append(room)
@@ -33,7 +72,7 @@ def create_test_data():
         floor="1floor",
         building="4building",
         capacity=2,
-        category="3cat",
+        category=categories[2],
         room_type="in_room"
     )
     rooms.append(room)
@@ -42,7 +81,7 @@ def create_test_data():
         floor="1floor",
         building="4building",
         capacity=1,
-        category="4cat",
+        category=categories[3],
         room_type="in_room"
     )
     rooms.append(room)
@@ -51,7 +90,7 @@ def create_test_data():
         floor="2floor",
         building="4building",
         capacity=2,
-        category="5cat",
+        category=categories[4],
         room_type="in_block"
     )
     rooms.append(room)
@@ -60,7 +99,7 @@ def create_test_data():
         floor="1floor",
         building="6building",
         capacity=2,
-        category="6cat",
+        category=categories[5],
         room_type="in_room"
     )
     rooms.append(room)
@@ -69,7 +108,7 @@ def create_test_data():
         floor="2floor",
         building="6building",
         capacity=2,
-        category="7cat",
+        category=categories[6],
         room_type="in_room"
     )
     rooms.append(room)
@@ -263,7 +302,7 @@ def create_test_data():
     # ----------PRICES--------------------
     prices = []
     price = RoomPrice.objects.create(
-        category="1cat",
+        category=categories[0],
         tour_price=10100,
         hotel_price=11100,
         date_begin='2025-01-01',
@@ -271,7 +310,7 @@ def create_test_data():
     )
     prices.append(price)
     price = RoomPrice.objects.create(
-        category="2cat",
+        category=categories[1],
         tour_price=10200,
         hotel_price=11200,
         date_begin='2025-01-01',
@@ -279,7 +318,7 @@ def create_test_data():
     )
     prices.append(price)
     price = RoomPrice.objects.create(
-        category="3cat",
+        category=categories[2],
         tour_price=10300,
         hotel_price=11300,
         date_begin='2025-01-01',
@@ -287,7 +326,7 @@ def create_test_data():
     )
     prices.append(price)
     price = RoomPrice.objects.create(
-        category="4cat",
+        category=categories[3],
         tour_price=10400,
         hotel_price=11400,
         date_begin='2025-01-01',
@@ -295,7 +334,7 @@ def create_test_data():
     )
     prices.append(price)
     price = RoomPrice.objects.create(
-        category="5cat",
+        category=categories[4],
         tour_price=10500,
         hotel_price=11500,
         date_begin='2025-01-01',
@@ -303,7 +342,7 @@ def create_test_data():
     )
     prices.append(price)
     price = RoomPrice.objects.create(
-        category="6cat",
+        category=categories[5],
         tour_price=10600,
         hotel_price=11600,
         date_begin='2025-01-01',
@@ -311,7 +350,7 @@ def create_test_data():
     )
     prices.append(price)
     price = RoomPrice.objects.create(
-        category="7cat",
+        category=categories[6],
         tour_price=10700,
         hotel_price=11700,
         date_begin='2025-01-01',

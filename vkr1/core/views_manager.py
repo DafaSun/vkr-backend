@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Booking, Place, Room, RoomPrice, Guest, BookingRecords, NutritionPrice
+from .models import Booking, Place, Room, RoomPrice, Guest, BookingRecords, NutritionPrice, Categories
 
 
 class ManagerAvailableCategoriesAPIView(APIView):
@@ -15,6 +15,7 @@ class ManagerAvailableCategoriesAPIView(APIView):
         gender = request.GET.get("gender")
         guests = int(request.GET.get("guests", 1))
         room_type = request.GET.get("room_type")
+        tour_type = request.GET.get("tour_type")
 
         if not checkin or not checkout:
             return Response({"error": "Укажите checkin и checkout"}, status=status.HTTP_400_BAD_REQUEST)
@@ -59,19 +60,22 @@ class ManagerAvailableCategoriesAPIView(APIView):
                 price = price_entry.tour_price * days
 
                 if category not in category_data:
-                    category_data[category] = {
-                        "category": category,
+                    category_data[category.id] = {
+                        "category_id": category.id,
+                        "category_label": category.label,
+                        "category_name": category.name,
                         "available_places": 0,
-                        "price_per_stay": price
+                        "price": price
                     }
 
-                category_data[category]["available_places"] += 1
+                category_data[category.id]["available_places"] += 1
 
         response_data = [
             {
-                "category": category,
+                "category_label": data["category_label"],
+                "category_name": data["category_name"],
                 "available_places": data["available_places"],
-                "price_per_stay": data["price_per_stay"]
+                "price": data["price"]
             }
             for category, data in category_data.items()
         ]
@@ -85,7 +89,9 @@ class ManagerAvailablePlacesAPIView(APIView):
         checkout = request.GET.get("checkout")
         gender = request.GET.get("gender")
         guests = int(request.GET.get("guests", 1))
-        category = request.GET.get("category")
+        category_label = request.GET.get("category")
+        category = Categories.objects.get(label=category_label)
+        tour_type = request.GET.get("tour_type")
 
         if not checkin or not checkout:
             return Response({"error": "Укажите checkin и checkout"}, status=status.HTTP_400_BAD_REQUEST)
@@ -131,6 +137,7 @@ class ManagerAvailablePlacesAPIView(APIView):
 
                 if place.id not in places_data:
                     places_data[place.id] = {
+                        "category_name": place.room.category.name,
                         "place_name": place.name,
                         "room_name": place.room.name,
                         "price": price
@@ -142,7 +149,8 @@ class ManagerAvailablePlacesAPIView(APIView):
                 "place_id": place_id,
                 "place_name": data["place_name"],
                 "room_name": data["room_name"],
-                "price": data["price"]
+                "price": data["price"],
+                "category_name": data["category_name"],
             }
             for place_id, data in places_data.items()
         ]
@@ -157,8 +165,8 @@ class ManagerBookingNewAPIView(APIView):
 
         place = Place.objects.get(id=place_id)
 
-        checkin = datetime.strptime(data["checkin"], "%Y-%m-%d")
-        checkout = datetime.strptime(data["checkout"], "%Y-%m-%d")
+        checkin = datetime.strptime(data["checkin"], "%Y-%m-%d").date()
+        checkout = datetime.strptime(data["checkout"], "%Y-%m-%d").date()
         surname = data["surname"]
         name = data["name"]
         patronymic = data.get("patronymic", None)
@@ -170,6 +178,7 @@ class ManagerBookingNewAPIView(APIView):
         breakfast = data.get("breakfast", False)
         lunch = data.get("lunch", False)
         dinner = data.get("dinner", False)
+        price = data.get("price", 10000)
 
         bookings = Booking.objects.filter(
             place_id=place_id,
@@ -195,23 +204,23 @@ class ManagerBookingNewAPIView(APIView):
         )
 
         days = (checkout - checkin).days
-        price = RoomPrice.objects.get(category=place.room.category)
-        total_price = 0
-        if tour_type=="usual":
-            total_price=days*price.tour_price
-        elif tour_type=="hotel":
-            total_price=days*price.hotel_price
-
-            breakfast_price = NutritionPrice.objects.get(nutrition='breakfast').price
-            lunch_price = NutritionPrice.objects.get(nutrition='breakfast').price
-            dinner_price = NutritionPrice.objects.get(nutrition='dinner').price
-
-            if breakfast:
-                total_price+=days*breakfast_price
-            if lunch:
-                total_price+=days*lunch_price
-            if dinner:
-                total_price+=days*dinner_price
+        # price = RoomPrice.objects.get(category=place.room.category)
+        # total_price = 800
+        # if tour_type == "usual":
+        #     total_price = days * price.tour_price
+        # elif tour_type == "hotel":
+        #     total_price = days * price.hotel_price
+        #
+        #     breakfast_price = NutritionPrice.objects.get(nutrition='breakfast').price
+        #     lunch_price = NutritionPrice.objects.get(nutrition='breakfast').price
+        #     dinner_price = NutritionPrice.objects.get(nutrition='dinner').price
+        #
+        #     if breakfast:
+        #         total_price += days * breakfast_price
+        #     if lunch:
+        #         total_price += days * lunch_price
+        #     if dinner:
+        #         total_price += days * dinner_price
 
         record = BookingRecords.objects.create(
             guest=guest,
@@ -219,7 +228,7 @@ class ManagerBookingNewAPIView(APIView):
             checkout=checkout,
             place=place,
             status="book",
-            total_price=total_price,
+            total_price=price,
             prepayment_percent=None,
             prepayment_money=None,
             hasBreakfast=breakfast,
@@ -231,12 +240,19 @@ class ManagerBookingNewAPIView(APIView):
         current_date = checkin
         booking_ids = []
         while current_date < checkout:
+            booking_for_delete = Booking.objects.filter(
+                place=place,
+                status='free',
+                date=current_date,)
+            booking_for_delete.delete()
+
             booking = Booking.objects.create(
                 place=place,
                 date=current_date,
                 gender=gender,
                 guest=guest,
-                record=record
+                status='book',
+                record=record,
             )
             booking_ids.append(booking.id)
             current_date += timedelta(days=1)
@@ -249,19 +265,18 @@ class ManagerBookingNewAPIView(APIView):
 
 class ManagerBookingsAPIView(APIView):
     def get(self, request):
-        category = request.query_params.get('category', None)
+        category_label = request.query_params.get('category', None)
         surname = request.query_params.get('surname', None)
         checkin = request.query_params.get('checkin', None)
 
-        if not checkin:
-            checkin_date = datetime.now().strftime("%Y-%m-%d")
-        else:
-            checkin_date = datetime.strptime(checkin, "%Y-%m-%d")
-
         records = BookingRecords.objects.all()
-        records = records.filter(checkin=checkin_date)
 
-        if category:
+        if checkin:
+            checkin_date = datetime.strptime(checkin, "%Y-%m-%d")
+            records = records.filter(checkin=checkin_date)
+
+        if category_label:
+            category = Categories.objects.get(label=category_label)
             records = records.filter(place__room__category=category)
 
         if surname:
@@ -269,6 +284,7 @@ class ManagerBookingsAPIView(APIView):
 
         records_list = [
             {
+                "booking_id": record.id,
                 "surname": record.guest.surname if record.guest else None,
                 "name": record.guest.name if record.guest else None,
                 "patronymic": record.guest.patronymic if record.guest else None,
@@ -276,12 +292,26 @@ class ManagerBookingsAPIView(APIView):
                 "place_name": record.place.name if record.place else None,
                 "place_id": record.place.id if record.place else None,
                 "checkin_date": record.checkin.strftime("%Y-%m-%d"),
-                "category": record.place.room.category,
+                "category_label": record.place.room.category.label,
+                "category_name": record.place.room.category.name,
             }
             for record in records
         ]
 
         return Response(records_list, status=status.HTTP_200_OK)
+
+class ManagerBookingPlaceNameAPIView(APIView):
+    def get(self, request):
+        place_id = request.query_params.get('place_id')
+
+        place = Place.objects.get(id=place_id)
+
+        response =  {
+                "place_id": place.id,
+                "place_name": place.name,
+            }
+
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class ManagerBookingsRecordGetAPIView(APIView):
@@ -291,9 +321,9 @@ class ManagerBookingsRecordGetAPIView(APIView):
         if not id:
             return Response({"error": "Укажите id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        record = BookingRecords.objects.filter(
+        record = BookingRecords.objects.get(
             id=record_id
-        ).first()
+        )
 
         response_data = {
             "guest_surname": record.guest.surname if record.guest else None,
@@ -302,7 +332,8 @@ class ManagerBookingsRecordGetAPIView(APIView):
             "checkin": record.checkin.strftime("%Y-%m-%d"),
             "checkout": record.checkout.strftime("%Y-%m-%d"),
             "room_name": record.place.room.name if record.place else None,
-            "category": record.place.room.category,
+            "category_label": record.place.room.category.label,
+            "category_name": record.place.room.category.name,
             "place_name": record.place.name if record.place else None,
             "status": record.status,
             "total_price": record.total_price,
@@ -366,7 +397,7 @@ class ManagerBookingsRecordUpdateAPIView(APIView):
 
 class ManagerRoomsTableAPIView(APIView):
     def get(self, request):
-        category = request.query_params.get('category', None)
+        category_label = request.query_params.get('category', None)
         building = request.query_params.get('building', None)
         date0 = request.query_params.get('date', None)
 
@@ -380,11 +411,12 @@ class ManagerRoomsTableAPIView(APIView):
 
         places = Place.objects.all().order_by("id")
 
-        if category:
+        if category_label:
+            category = Categories.objects.get(label=category_label)
             places = places.filter(room__category=category)
 
         if building:
-            places = places.filter(room__building=category)
+            places = places.filter(room__building=building)
 
         bookings = Booking.objects.filter(date__range=[start_date, end_date])
 
@@ -395,6 +427,9 @@ class ManagerRoomsTableAPIView(APIView):
         }
 
         for booking in bookings:
+            if booking.place.name not in data["bookings"]:
+                data["bookings"][booking.place.name] = {}
+
             data["bookings"][booking.place.name][booking.date.isoformat()] = booking.status
 
         for place in data["places"]:
@@ -411,7 +446,7 @@ class ManagerGuestsAPIView(APIView):
         guests = Guest.objects.all()
 
         if surname:
-            guests = guests.filter(guest__surname__icontains=surname)
+            guests = guests.filter(surname__icontains=surname)
 
         response_data = [
             {
@@ -457,7 +492,8 @@ class ManagerGuestsGetPersonAPIView(APIView):
             "room_name": record.place.room.name,
             "checkin": record.checkin,
             "checkout": record.checkout,
-            "category": record.place.room.category,
+            "category_label": record.place.room.category.label,
+            "category_name": record.place.room.category.name,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
@@ -502,8 +538,17 @@ class ManagerGuestsNewPersonAPIView(APIView):
 
 class ManagerGuestsEditPersonAPIView(APIView):
     def patch(self, request):
-        guest_id = request.data.get("guest_id")
+        guest_id = request.GET.get("id")
         guest = Guest.objects.get(id=guest_id)
+        print('______________________________________')
+        print('______________________________________')
+        print('______________________________________')
+        print('______________________________________')
+        print(guest_id)
+        print('______________________________________')
+        print('______________________________________')
+        print('______________________________________')
+        print('______________________________________')
 
         surname = request.data.get("surname", guest.surname)
         name = request.data.get("name", guest.name)
@@ -515,7 +560,8 @@ class ManagerGuestsEditPersonAPIView(APIView):
         home_address_country = request.data.get("home_address_country", guest.home_address_country)
         home_address_region = request.data.get("home_address_region", guest.home_address_region)
         home_address_city = request.data.get("home_address_city", guest.home_address_city)
-        home_address_street_and_house = request.data.get("home_address_street_and_house", guest.home_address_street_and_house)
+        home_address_street_and_house = request.data.get("home_address_street_and_house",
+                                                         guest.home_address_street_and_house)
         workplace = request.data.get("workplace", guest.workplace)
 
         guest.surname = surname
@@ -539,3 +585,19 @@ class ManagerGuestsEditPersonAPIView(APIView):
             "surname": guest.surname,
             "patronymic": guest.patronymic,
         }, status=status.HTTP_200_OK)
+
+
+class ManagerGuestsDeletePersonAPIView(APIView):
+    def delete(self, request):
+        guest_id = request.GET.get("id")
+
+        if not id:
+            return Response({"error": "Укажите id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        guest = Guest.objects.get(id=guest_id)
+        guest.delete()
+
+        return Response({"message": "Booking record deleted and bookings updated successfully"},
+                            status=status.HTTP_204_NO_CONTENT)
+
+

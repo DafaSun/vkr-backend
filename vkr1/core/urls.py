@@ -16,6 +16,7 @@ urlpatterns = [
     path("manager/categories/places/", ManagerAvailablePlacesAPIView.as_view(), name="categories_places"),
     path("manager/booking/new/", ManagerBookingNewAPIView.as_view(), name="booking_new"),
     path("manager/bookings/", ManagerBookingsAPIView.as_view(), name="bookings"),
+    path("manager/booking/place_name/", ManagerBookingPlaceNameAPIView.as_view(), name="bookings"),
     path("manager/bookings/record/", ManagerBookingsRecordGetAPIView.as_view(), name="bookings_record"),
     path("manager/bookings/record/delete/", ManagerBookingsRecordDeleteAPIView.as_view(), name="bookings_record_delete"),
     path("manager/bookings/record/update/", ManagerBookingsRecordUpdateAPIView.as_view(), name="bookings_record_update"),
@@ -23,5 +24,6 @@ urlpatterns = [
     path("manager/guests/", ManagerGuestsAPIView.as_view(), name="guests"),
     path("manager/guests/person/", ManagerGuestsGetPersonAPIView.as_view(), name="guests_person"),
     path("manager/guests/new/", ManagerGuestsNewPersonAPIView.as_view(), name="guests_person"),
-    path("manager/guests/edit/", ManagerGuestsEditPersonAPIView.as_view(), name="guests_person"),
+    path("manager/guests/person/update/", ManagerGuestsEditPersonAPIView.as_view(), name="guests_person"),
+    path("manager/guests/person/delete/", ManagerGuestsDeletePersonAPIView.as_view(), name="guests_person"),
 ]
