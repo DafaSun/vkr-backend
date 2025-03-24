@@ -231,9 +231,9 @@ class ManagerBookingNewAPIView(APIView):
             total_price=price,
             prepayment_percent=None,
             prepayment_money=None,
-            hasBreakfast=breakfast,
-            hasLunch=lunch,
-            hasDinner=dinner,
+            has_breakfast=breakfast,
+            has_lunch=lunch,
+            has_dinner=dinner,
             tour_type=tour_type,
         )
 
